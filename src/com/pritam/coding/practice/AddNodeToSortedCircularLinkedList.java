@@ -4,20 +4,26 @@
 package com.pritam.coding.practice;
 
 /**
+ * Add node to sorted circular linked list
+ *
  * @author pribiswas
  *
  */
 public class AddNodeToSortedCircularLinkedList {
 
 	private static class Node<T extends Comparable<T>> {
-		private T value;
+		private final T value;
 		private Node<T> next;
 
 		public Node(T value) {
 			this.value = value;
-			this.next = null;
 		}
 
+		/**
+		 * Set the next
+		 *
+		 * @param next
+		 */
 		public void setNext(Node<T> next) {
 			this.next = next;
 		}
@@ -28,10 +34,10 @@ public class AddNodeToSortedCircularLinkedList {
 		}
 	}
 
-	private static class AscSortedCircularLinkedList<T extends Comparable<T>> {
+	private static class SortedCircularLinkedList<T extends Comparable<T>> {
 		private Node<T> head;
 
-		public AscSortedCircularLinkedList(Node<T> head) {
+		public SortedCircularLinkedList(Node<T> head) {
 			if (head == null) {
 				throw new IllegalArgumentException("Provide valid head");
 			}
@@ -39,7 +45,7 @@ public class AddNodeToSortedCircularLinkedList {
 		}
 
 		/**
-		 * Add a node with agven value
+		 * Add a node with a given value
 		 *
 		 * @param value
 		 */
@@ -47,14 +53,12 @@ public class AddNodeToSortedCircularLinkedList {
 			// less than head, make it new head and return
 			if (value.compareTo(head.value) < 0) {
 				Node<T> newNode = new Node<>(value);
-				// find the tail of the list and update to new head
-				Node<T> temp = head;
-				while (temp.next != head) {
-					temp = temp.next;
-				}
+				// find the tail of the list, update to new head and update next pointer of tail
+				// to maintain the circular behavior
+				Node<T> tail = findTail();
 				newNode.next = head;
 				head = newNode;
-				temp.next = head;
+				tail.next = head;
 				return;
 			}
 			Node<T> temp = head;
@@ -64,8 +68,21 @@ public class AddNodeToSortedCircularLinkedList {
 		}
 
 		/**
-		 * Add the given value in between the given node and its next node if
-		 * sorting condition matched
+		 * Find the tail of the circular linked list
+		 *
+		 * @return
+		 */
+		private Node<T> findTail() {
+			Node<T> temp = head;
+			while (temp.next != head) {
+				temp = temp.next;
+			}
+			return temp;
+		}
+
+		/**
+		 * Add the given value in between the given node and its next node if sorting
+		 * condition matched
 		 *
 		 * @param node
 		 * @param value
@@ -73,8 +90,7 @@ public class AddNodeToSortedCircularLinkedList {
 		 */
 		private boolean addInBetween(Node<T> node, T value) {
 			Node<T> newNode = new Node<>(value);
-			if (node.value.compareTo(value) <= 0
-					&& (node.next.value.compareTo(value) > 0 || node.next.value.compareTo(node.value) < 0)) {
+			if (node.value.compareTo(value) <= 0 && (node.next.value.compareTo(value) > 0 || node.next == head)) {
 				newNode.setNext(node.next);
 				node.setNext(newNode);
 				return true;
@@ -84,17 +100,14 @@ public class AddNodeToSortedCircularLinkedList {
 
 		@Override
 		public String toString() {
-			if (head == null) {
-				return "";
-			}
-			StringBuilder linkedListBuilder = new StringBuilder(head.toString());
+			StringBuilder toStringBuilder = new StringBuilder(head.toString());
 			Node<T> temp = head.next;
 			while (temp != head) {
-				linkedListBuilder.append("->").append(temp.toString());
+				toStringBuilder.append("->").append(temp.toString());
 				temp = temp.next;
 			}
-			linkedListBuilder.append("->").append(temp.toString());
-			return linkedListBuilder.toString();
+			toStringBuilder.append("->").append(temp.toString());
+			return toStringBuilder.toString();
 		}
 	}
 
@@ -106,7 +119,7 @@ public class AddNodeToSortedCircularLinkedList {
 		head.next = new Node<Integer>(3);
 		head.next.next = new Node<Integer>(6);
 		head.next.next.next = head;
-		AscSortedCircularLinkedList<Integer> list = new AscSortedCircularLinkedList<>(head);
+		SortedCircularLinkedList<Integer> list = new SortedCircularLinkedList<>(head);
 		System.out.println(list.toString());
 
 		list.addNode(4);
