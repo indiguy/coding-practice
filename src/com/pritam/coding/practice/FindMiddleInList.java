@@ -1,11 +1,11 @@
 /**
- * 
+ *
  */
 package com.pritam.coding.practice;
 
 /**
  * Find middle in the linked list
- * 
+ *
  * @author pribiswas
  *
  */
@@ -16,17 +16,15 @@ public class FindMiddleInList<T> {
 
 	/**
 	 * Add new node at the end of the list
-	 * 
+	 *
 	 * @param data
 	 */
 	public void add(T data) {
+		Node<T> node = new Node<T>(data);
 		if (head == null) {
-			Node<T> node = new Node<T>(data);
 			head = node;
-			head.setNext(null);
 			tail = head;
 		} else {
-			Node<T> node = new Node<T>(data);
 			tail.setNext(node);
 			tail = node;
 		}
@@ -34,7 +32,7 @@ public class FindMiddleInList<T> {
 
 	/**
 	 * Find the middle element of the list
-	 * 
+	 *
 	 * @return
 	 */
 	public T findMiddle() {
@@ -54,7 +52,7 @@ public class FindMiddleInList<T> {
 
 		/**
 		 * Constructor
-		 * 
+		 *
 		 * @param data
 		 */
 		Node(T data) {

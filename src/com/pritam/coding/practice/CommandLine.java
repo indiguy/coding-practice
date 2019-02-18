@@ -9,7 +9,8 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -23,6 +24,99 @@ public class CommandLine {
 
 	private static enum Command {
 		dir, mkdir, cd, up
+	}
+
+	/**
+	 * Simulation of a computer directory
+	 *
+	 * @author pribiswas
+	 *
+	 */
+	private static class Directory {
+
+		private final Directory parent;
+		private final String name;
+		private final Map<String, Directory> subDirectories;
+
+		public Directory(String name, Directory parent) {
+			if (name == null || name.trim().length() == 0) {
+				throw new IllegalArgumentException("name can not be blank");
+			}
+			this.parent = parent;
+			this.name = name;
+			this.subDirectories = new LinkedHashMap<>();
+		}
+
+		/**
+		 * List sub-directories
+		 *
+		 * @return a {@link Set} of sub directories
+		 */
+		public Set<String> listSubDirectories() {
+			return subDirectories.keySet();
+		}
+
+		/**
+		 * Create a sub directory with a given name
+		 *
+		 * @param name
+		 */
+		public void createSubDirectory(String name) {
+			if (subDirectories.containsKey(name)) {
+				throw new IllegalArgumentException("directory with same name exists.");
+			}
+			subDirectories.put(name, new Directory(name, this));
+		}
+
+		/**
+		 * Change to given sub directory
+		 *
+		 * @param name
+		 * @return the changed directory, or null if subdirectory doesn't exist
+		 */
+		public Directory changeDirectory(String name) {
+			if (!subDirectories.containsKey(name)) {
+				throw new IllegalArgumentException("directory does not exists");
+			}
+			return subDirectories.get(name);
+		}
+
+		/**
+		 * Get the absolute path of this directory
+		 *
+		 * @return the absolute path of this directory
+		 */
+		public String getAbsolutePath() {
+			if (parent == null) {
+				return name;
+			}
+
+			return new StringBuilder(parent.getAbsolutePath()).append("\\").append(name).toString();
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj) {
+				return true;
+			}
+			if (obj == null || getClass() != obj.getClass()) {
+				return false;
+			}
+			Directory other = (Directory) obj;
+			return this.getAbsolutePath().equals(other.getAbsolutePath());
+		}
+
+		@Override
+		public int hashCode() {
+			int result = 1;
+			result = result * 31 + this.getAbsolutePath().hashCode();
+			return result;
+		}
+
+		@Override
+		public String toString() {
+			return this.getAbsolutePath();
+		}
 	}
 
 	private Directory current;
@@ -65,26 +159,19 @@ public class CommandLine {
 
 		switch (commandEnum) {
 		case dir:
-			outBuilder.append("\n").append(current.listSubDirectories());
+			outBuilder.append("\n").append(current.listSubDirectories().stream().collect(Collectors.joining(" ")));
 			break;
 		case mkdir:
 			if (options.length == 0) {
 				throw new IllegalArgumentException("Please provide name of the sub sirectory");
 			}
-			if (!current.createSubDirectory(options[0])) {
-				outBuilder.append("\n").append("Subdirectory already exists");
-			}
+			current.createSubDirectory(options[0]);
 			break;
 		case cd:
 			if (options.length == 0) {
 				throw new IllegalArgumentException("Please provide name of the sub sirectory");
 			}
-			Directory changeDirectory = current.changeDirectory(options[0]);
-			if (changeDirectory == null) {
-				outBuilder.append("\n").append("Subdirecyory does not exist");
-			} else {
-				this.current = changeDirectory;
-			}
+			this.current = current.changeDirectory(options[0]);
 			break;
 		case up:
 			if (current.parent == null) {
@@ -94,102 +181,6 @@ public class CommandLine {
 			break;
 		}
 		return outBuilder.toString();
-	}
-
-	/**
-	 * Simulation of a computer directory
-	 *
-	 * @author pribiswas
-	 *
-	 */
-	private static class Directory {
-
-		private final Directory parent;
-		private final String name;
-		private final Set<Directory> subDirectories;
-
-		public Directory(String name, Directory parent) {
-			if (name == null || name.trim().length() == 0) {
-				throw new IllegalArgumentException("name can not be blank");
-			}
-			this.parent = parent;
-			this.name = name;
-			this.subDirectories = new HashSet<>();
-		}
-
-		/**
-		 * List sub-directories
-		 *
-		 * @return in format : sub1 sub2 sub3
-		 */
-		public String listSubDirectories() {
-			String subs = subDirectories.isEmpty() ? "No sub-directories"
-					: subDirectories.stream().map(dir -> dir.name).collect(Collectors.joining(" "));
-			return new StringBuilder("Directories of ").append(this.getAbsolutePath()).append(":\n").append(subs)
-					.toString();
-		}
-
-		/**
-		 * Create a sub directory with a given name
-		 *
-		 * @param name
-		 * @return true if created, false if sub directory already exists
-		 */
-		public boolean createSubDirectory(String name) {
-			Directory sub = new Directory(name, this);
-			return subDirectories.add(sub);
-		}
-
-		/**
-		 * Change to given sub directory
-		 *
-		 * @param subDirectory
-		 * @return the changed directory, or null if subdirectory doesn't exist
-		 */
-		public Directory changeDirectory(String subDirectory) {
-			Directory changed = new Directory(subDirectory, this);
-			if (subDirectories.contains(changed)) {
-				return changed;
-			}
-			return null;
-		}
-
-		/**
-		 * Get the absolute path of this directory
-		 *
-		 * @return the absolute path of this directory
-		 */
-		public String getAbsolutePath() {
-			if (parent == null) {
-				return name;
-			}
-
-			return new StringBuilder(parent.getAbsolutePath()).append("\\").append(name).toString();
-		}
-
-		@Override
-		public boolean equals(Object obj) {
-			if (this == obj) {
-				return true;
-			}
-			if (obj == null || getClass() != obj.getClass()) {
-				return false;
-			}
-			Directory other = (Directory) obj;
-			return this.getAbsolutePath().equals(other.getAbsolutePath());
-		}
-
-		@Override
-		public int hashCode() {
-			int result = 1;
-			result = result * 31 + this.getAbsolutePath().hashCode();
-			return result;
-		}
-
-		@Override
-		public String toString() {
-			return this.getAbsolutePath();
-		}
 	}
 
 	/**

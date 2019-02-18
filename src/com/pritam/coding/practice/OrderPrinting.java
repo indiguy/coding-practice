@@ -1,5 +1,11 @@
 package com.pritam.coding.practice;
 
+/**
+ * Write a program to print 1 2 3 in order always using three different thread
+ *
+ * @author pribiswas
+ *
+ */
 public class OrderPrinting {
 
 	private static final int LOOP_COUNT = 5;
@@ -7,7 +13,6 @@ public class OrderPrinting {
 	private static class CompletionLock {
 		private boolean firstCompleted;
 		private boolean secondCompleted;
-		private boolean thirdCompleted;
 
 		/**
 		 * @return the firstCompleted
@@ -40,27 +45,12 @@ public class OrderPrinting {
 		}
 
 		/**
-		 * @return the thirdCompleted
-		 */
-		public boolean isThirdCompleted() {
-			return thirdCompleted;
-		}
-
-		/**
-		 * @param thirdCompleted
-		 *            the thirdCompleted to set
-		 */
-		public void setThirdCompleted(boolean thirdCompleted) {
-			this.thirdCompleted = thirdCompleted;
-		}
-
-		/**
 		 * When no one started manipulating this object
 		 *
 		 * @return
 		 */
 		public boolean isInInitialState() {
-			return !firstCompleted && !secondCompleted && !thirdCompleted;
+			return !firstCompleted && !secondCompleted;
 		}
 
 	}
@@ -73,7 +63,7 @@ public class OrderPrinting {
 			int i = 0;
 			while (i < LOOP_COUNT) {
 				synchronized (completionLock) {
-					while (!completionLock.isInInitialState() && !completionLock.isThirdCompleted()) {
+					while (!completionLock.isInInitialState()) {
 						try {
 							completionLock.wait();
 						} catch (InterruptedException e) {
@@ -83,7 +73,6 @@ public class OrderPrinting {
 					i++;
 					System.out.print(1);
 					completionLock.setFirstCompleted(true);
-					completionLock.setThirdCompleted(false);
 					completionLock.notifyAll();
 				}
 			}
@@ -122,7 +111,6 @@ public class OrderPrinting {
 					}
 					i++;
 					System.out.print(3);
-					completionLock.setThirdCompleted(true);
 					completionLock.setSecondCompleted(false);
 					completionLock.notifyAll();
 				}
